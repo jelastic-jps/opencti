@@ -41,6 +41,7 @@ actions:
     - cmd[cp]: |-
         
         echo '/root' >> /etc/jelastic/redeploy.conf
+		sysctl -w vm.max_map_count=1048575
         git clone https://github.com/OpenCTI-Platform/docker.git
         cd docker
 
