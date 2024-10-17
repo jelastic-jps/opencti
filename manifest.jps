@@ -1,0 +1,85 @@
+type: install
+id: opencti
+version: 6.3.6
+name: OpenCTI 
+baseUrl: https://raw.githubusercontent.com/jelastic-jps/opencti/master
+logo: /images/logo.svg?sanitize=true
+
+ssl: true
+
+description: 
+  text: Organize your cyber threat intelligence to enhance and disseminate actionable insights with our open-source threat intelligence platform.
+  short: Cyber Threat Intelligence Platform
+
+targetRegions:
+  type: vz7
+
+categories:
+- apps/dev-and-admin-tools
+- apps/collaboration
+  
+globals: 
+  user: ${user.email} 
+  password: ${fn.password}
+
+nodes:
+  nodeType: dockerengine
+  nodeGroup: cp
+  cloudlets: 64
+  extip: false
+  displayName: OpenCTI
+  env:
+    JELASTIC_EXPOSE: 8080
+    JELASTIC_PORTS: 8080
+
+
+onInstall:
+  - setup
+
+actions:     
+  setup:      
+    - cmd[cp]: |-
+        
+        echo '/root' >> /etc/jelastic/redeploy.conf
+        git clone https://github.com/OpenCTI-Platform/docker.git
+        cd docker
+
+        (cat << EOF
+        OPENCTI_ADMIN_EMAIL=${globals.user}
+        OPENCTI_ADMIN_PASSWORD=${globals.password}
+        OPENCTI_ADMIN_TOKEN=$(cat /proc/sys/kernel/random/uuid)
+        OPENCTI_BASE_URL=http://localhost:8080
+        MINIO_ROOT_USER=$(cat /proc/sys/kernel/random/uuid)
+        MINIO_ROOT_PASSWORD=$(cat /proc/sys/kernel/random/uuid)
+        RABBITMQ_DEFAULT_USER=guest
+        RABBITMQ_DEFAULT_PASS=guest
+        ELASTIC_MEMORY_SIZE=4G
+        CONNECTOR_HISTORY_ID=$(cat /proc/sys/kernel/random/uuid)
+        CONNECTOR_EXPORT_FILE_STIX_ID=$(cat /proc/sys/kernel/random/uuid)
+        CONNECTOR_EXPORT_FILE_CSV_ID=$(cat /proc/sys/kernel/random/uuid)
+        CONNECTOR_IMPORT_FILE_STIX_ID=$(cat /proc/sys/kernel/random/uuid)
+        CONNECTOR_EXPORT_FILE_TXT_ID=$(cat /proc/sys/kernel/random/uuid)
+        CONNECTOR_IMPORT_DOCUMENT_ID=$(cat /proc/sys/kernel/random/uuid)
+        SMTP_HOSTNAME=localhost
+        EOF
+        ) > .env
+
+        docker-compose -f docker-compose.yml up -d 
+
+        #Checking of container is up and running 
+        until [ "`/usr/bin/docker inspect -f {{.State.Running}} docker-opencti-1`"=="true" ]; do
+          sleep 1
+          echo '.'
+        done;
+                
+        echo OK
+        #TEMP as JELASTIC_EXPOSE has problem
+        iptables -A PREROUTING -t nat -p tcp --dport 80 -j REDIRECT --to-port 8080
+
+      
+    
+success: | 
+  **OpenCTI Server**: [https://${env.domain}/](https://${env.domain}/)  
+  **User**: ${globals.user}  
+  **Password**: ${globals.password}    
+
