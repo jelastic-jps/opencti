@@ -1,290 +1,12 @@
-Demo	
-New Environment
-Import
-Marketplace
-Balance $44814.96
-Settings
-Help
-ik@jelastic.com
- 
-Env Groups
- 
- 
-Search (Cmd+F)
- 
-Name
-Status
-Tags
-Usage
-
-Backup Storage
-mybackup.demo.jelastic.com	
-Running
- 
- Backup storage nodes
-1 / 6
- 
-8%
- 
-
-dbaasexample
-dbaasexample.demo.jelastic.com	
-Running
- 
-1 / 6
- 
-14%
- 
-
-env-8926117
-env-8926117.demo.jelastic.com	
-Running
- 
-3 / 16
- 
-1%
- 
-
-ik-analytics
-ik-analytics.vip.jelastic.cloud	
-Stopped
- 
-0 / 4
- 
-14%
- 
-
-imported
-imported.demo.jelastic.com	
-Running
- 
-1 / 16
- 
-4%
- 
-
-maxscale-test
-maxscale-test.demo.jelastic.com	
-Running
- 
-10 / 110
- 
-16%
- 
-
-mysqlcuster
-mysqlcuster.demo.jelastic.com	
-Running
- 
-12 / 32
- 
-44%
- 
-SQL Databases x 2MariaDB 11.4.2	
-auto-clustering
-4 / 16
- 
-13%
-Primary (397227)	
-11.4.2-almalinux-9
-2 / 8
- 
-14%
-Primary (397228)	
-11.4.2-almalinux-9
-2 / 8
- 
-12%
-ProxySQL x 2ProxySQL 2.5.5	
-8 / 16
- 
-75%
-Node ID: 397226	
-2.5.5-almalinux-9
-5 / 8
- 
-78%
-Node ID: 397229	
-2.5.5-almalinux-9
-3 / 8
- 
-73%
-
-OpenCTI
-gogogogo.vip.jelastic.cloud	
-Running
- 
-23 / 88
- 
-1%
- 
-OpenCTI-PlatformPlatform	
-4 / 16
- 
-1%
-Node ID: 401067	
-6.3.6
-4 / 16
- 
-1%
-ElasticSearchElasticsearch	
-13 / 16
- 
-1%
-Node ID: 401070	
-8.15.2
-13 / 16
- 
-1%
-Worker x 3Worker	
-3 / 24
- 
-1%
-Node ID: 401069	
-6.3.8
-1 / 8
- 
-1%
-Node ID: 401066	
-6.3.8
-1 / 8
- 
-1%
-Node ID: 401071	
-6.3.8
-1 / 8
- 
-1%
-RedisRedis	
-1 / 8
- 
-1%
-Node ID: 401068	
-7.4.0
-1 / 8
- 
-1%
-RabbitMQRabbitmq	
-1 / 8
- 
-1%
-Node ID: 401064	
-latest
-1 / 8
- 
-1%
-S3-MinioMinio	
-1 / 16
- 
-1%
-Node ID: 401065	
-latest
-1 / 16
- 
-1%
-
-OpenVPN Access Server
-private-vpn.vip.jelastic.cloud	
-Running
- 
-3 / 8
- 
-1%
- 
-
-php-simple-app
-php-simple-app.demo.jelastic.com	
-Running
- 
-1 / 4
- 
-19%
- 
-
-pva-agent-build9
-pva-agent-build9.demo.jelastic.com	
-Running
- 
-1 / 54
- 
-55%
- 
-
-RKE - Kubernetes
-rancher.vip.jelastic.cloud	
-Running
- 
-26 / 72
- 
-1%
- 
-
-shared-storage
-shared-storage.demo.jelastic.com	
-Running
- 
-1 / 76
- 
-1%
- 
-
-simple-java-app1
-simple-java-app1.demo.jelastic.com	
-Running
- 
-12 / 65
- 
-11%
- 
-
-vz-automator
-vz-automator.vip.jelastic.cloud	
-Running
- 
-3 / 4
- 
-10%
- 
-
-WordPress Cluster Kit v2
-wordpress-example.vip.jelastic.cloud	
-Running
- 
-13 / 96
- 
-1%
- 
-
-Worldwise
-test44.demo.jelastic.com	
-Running
- 
-2 / 24
- 
-1%
- 
-Deployment Manager
-
-
-
-
-
-type: install
-id: opencti
-version: 6.3.6
-name: OpenCTI 
-baseUrl: https://raw.githubusercontent.com/jelastic-jps/opencti/master
-logo: /images/logo.svg?sanitize=true
-​
 ssl: true
-​
+
 description: 
   text: Organize your cyber threat intelligence to enhance and disseminate actionable insights with our open-source threat intelligence platform.
   short: Cyber Threat Intelligence Platform
-​
+
 targetRegions:
   type: vz7
-​
+
 categories:
 - apps/dev-and-admin-tools
 - apps/collaboration
@@ -318,6 +40,96 @@ nodes:
       APP__BASE_URL: ${OPENCTI_BASE_URL}
       APP__ADMIN__EMAIL: ${globals.user}  
       APP__ADMIN__PASSWORD: ${globals.password}
-Cancel
-Import
+      APP__ADMIN__TOKEN: ${globals.APP__ADMIN__TOKEN}
+      ELASTICSEARCH__URL: http://elasticsearch:9200
+      
+      links: 
+        - redis:redis
+        - myminio:minio
+        - elasticsearch:elasticsearch
+        - rabbitmq:rabbitmq
  
+  - image: million12/rabbitmq
+    displayName: RabbitMQ
+    cloudlets: 8
+    nodeGroup: rabbitmq 
+      
+  - image: redis:7.4.0
+    displayName: Redis
+    cloudlets: 8
+    nodeGroup: redis
+      
+  - image: elasticsearch:8.15.2
+    displayName: ElasticSearch
+    cloudlets: 16
+    nodeGroup: elasticsearch       
+
+  - image: minio/minio:latest
+    displayName: S3-Minio
+    cloudlets: 16
+    nodeGroup: minio  
+    env:
+      MINIO__ACCESS_KEY: ${globals.MINIO_ROOT_USER} 
+      MINIO__SECRET_KEY: ${globals.MINIO_ROOT_PASSWORD}
+      MINIO_ROOT_USER: ${globals.MINIO_ROOT_USER} 
+      MINIO_ROOT_PASSWORD: ${globals.MINIO_ROOT_PASSWORD}
+    cmd:
+      minio server /data --console-address "0.0.0.0:9001"
+
+  
+  - image: opencti/worker:6.3.8
+    displayName: Worker
+    cloudlets: 8
+    count: 3
+    nodeGroup: workers 
+    env:
+      OPENCTI_URL: http://opencti:8080 
+      OPENCTI_TOKEN: ${globals.APP__ADMIN__TOKEN}  
+      WORKER_LOG_LEVEL: info
+    links: 
+        - cp:opencti   
+
+onInstall:
+  - setup
+  - restartContainer [elasticsearch]
+  - wait
+  - restartContainer [cp]
+  - verifyInstall
+  - restartContainer [workers]
+
+actions:     
+  setup:      
+    - cmd[cp]: |-
+        
+        #TEMP as JELASTIC_EXPOSE has problem
+        MINIO_IP=$(ping -c1 minio | sed -nE 's/^PING[^(]+\(([^)]+)\).*/\1/p')
+        echo "$MINIO_IP myminio" >> /etc/hosts
+        iptables -A PREROUTING -t nat -p tcp --dport 80 -j REDIRECT --to-port 8080
+
+    - cmd[rabbitmq]: |-
+        rabbitmqctl add_user ${globals.RABBITMQ__USERNAME} ${globals.RABBITMQ__PASSWORD}
+        rabbitmqctl set_user_tags ${globals.RABBITMQ__USERNAME} administrator
+        rabbitmqctl set_permissions -p / ${globals.RABBITMQ__USERNAME} ".*" ".*" ".*"
+        
+    - cmd[elasticsearch]: |-
+        sed -i 's/true/false/g'  /usr/share/elasticsearch/config/elasticsearch.yml
+        sysctl -w vm.max_map_count=1048575
+        echo "updated"
+
+  wait:
+    - cmd[minio]: |-
+          sleep 30
+
+  verifyInstall:
+    - cmd[cp]: |-
+        while :
+          do
+              netstat -ant | grep -q 8080 && break || sleep 1
+          done
+      
+    
+success: | 
+  **OpenCTI Server**: [https://${env.domain}/](https://${env.domain}/)  
+  **User**: ${globals.user}  
+  **Password**: ${globals.password}    
+
