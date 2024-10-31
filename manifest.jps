@@ -1,98 +1,323 @@
+Demo	
+New Environment
+Import
+Marketplace
+Balance $44814.96
+Settings
+Help
+ik@jelastic.com
+ 
+Env Groups
+ 
+ 
+Search (Cmd+F)
+ 
+Name
+Status
+Tags
+Usage
+
+Backup Storage
+mybackup.demo.jelastic.com	
+Running
+ 
+ Backup storage nodes
+1 / 6
+ 
+8%
+ 
+
+dbaasexample
+dbaasexample.demo.jelastic.com	
+Running
+ 
+1 / 6
+ 
+14%
+ 
+
+env-8926117
+env-8926117.demo.jelastic.com	
+Running
+ 
+3 / 16
+ 
+1%
+ 
+
+ik-analytics
+ik-analytics.vip.jelastic.cloud	
+Stopped
+ 
+0 / 4
+ 
+14%
+ 
+
+imported
+imported.demo.jelastic.com	
+Running
+ 
+1 / 16
+ 
+4%
+ 
+
+maxscale-test
+maxscale-test.demo.jelastic.com	
+Running
+ 
+10 / 110
+ 
+16%
+ 
+
+mysqlcuster
+mysqlcuster.demo.jelastic.com	
+Running
+ 
+12 / 32
+ 
+44%
+ 
+SQL Databases x 2MariaDB 11.4.2	
+auto-clustering
+4 / 16
+ 
+13%
+Primary (397227)	
+11.4.2-almalinux-9
+2 / 8
+ 
+14%
+Primary (397228)	
+11.4.2-almalinux-9
+2 / 8
+ 
+12%
+ProxySQL x 2ProxySQL 2.5.5	
+8 / 16
+ 
+75%
+Node ID: 397226	
+2.5.5-almalinux-9
+5 / 8
+ 
+78%
+Node ID: 397229	
+2.5.5-almalinux-9
+3 / 8
+ 
+73%
+
+OpenCTI
+gogogogo.vip.jelastic.cloud	
+Running
+ 
+23 / 88
+ 
+1%
+ 
+OpenCTI-PlatformPlatform	
+4 / 16
+ 
+1%
+Node ID: 401067	
+6.3.6
+4 / 16
+ 
+1%
+ElasticSearchElasticsearch	
+13 / 16
+ 
+1%
+Node ID: 401070	
+8.15.2
+13 / 16
+ 
+1%
+Worker x 3Worker	
+3 / 24
+ 
+1%
+Node ID: 401069	
+6.3.8
+1 / 8
+ 
+1%
+Node ID: 401066	
+6.3.8
+1 / 8
+ 
+1%
+Node ID: 401071	
+6.3.8
+1 / 8
+ 
+1%
+RedisRedis	
+1 / 8
+ 
+1%
+Node ID: 401068	
+7.4.0
+1 / 8
+ 
+1%
+RabbitMQRabbitmq	
+1 / 8
+ 
+1%
+Node ID: 401064	
+latest
+1 / 8
+ 
+1%
+S3-MinioMinio	
+1 / 16
+ 
+1%
+Node ID: 401065	
+latest
+1 / 16
+ 
+1%
+
+OpenVPN Access Server
+private-vpn.vip.jelastic.cloud	
+Running
+ 
+3 / 8
+ 
+1%
+ 
+
+php-simple-app
+php-simple-app.demo.jelastic.com	
+Running
+ 
+1 / 4
+ 
+19%
+ 
+
+pva-agent-build9
+pva-agent-build9.demo.jelastic.com	
+Running
+ 
+1 / 54
+ 
+55%
+ 
+
+RKE - Kubernetes
+rancher.vip.jelastic.cloud	
+Running
+ 
+26 / 72
+ 
+1%
+ 
+
+shared-storage
+shared-storage.demo.jelastic.com	
+Running
+ 
+1 / 76
+ 
+1%
+ 
+
+simple-java-app1
+simple-java-app1.demo.jelastic.com	
+Running
+ 
+12 / 65
+ 
+11%
+ 
+
+vz-automator
+vz-automator.vip.jelastic.cloud	
+Running
+ 
+3 / 4
+ 
+10%
+ 
+
+WordPress Cluster Kit v2
+wordpress-example.vip.jelastic.cloud	
+Running
+ 
+13 / 96
+ 
+1%
+ 
+
+Worldwise
+test44.demo.jelastic.com	
+Running
+ 
+2 / 24
+ 
+1%
+ 
+Deployment Manager
+
+
+
+
+
 type: install
 id: opencti
 version: 6.3.6
 name: OpenCTI 
 baseUrl: https://raw.githubusercontent.com/jelastic-jps/opencti/master
 logo: /images/logo.svg?sanitize=true
-
+​
 ssl: true
-
+​
 description: 
   text: Organize your cyber threat intelligence to enhance and disseminate actionable insights with our open-source threat intelligence platform.
   short: Cyber Threat Intelligence Platform
-
+​
 targetRegions:
   type: vz7
-
+​
 categories:
 - apps/dev-and-admin-tools
 - apps/collaboration
   
 globals: 
   user: ${user.email} 
-  password: ${fn.password}
-
+  password: ${fn.password}  
+  RABBITMQ__USERNAME: ${fn.uuid}
+  RABBITMQ__PASSWORD: ${fn.uuid}
+  MINIO_ROOT_USER: minioadmin
+  MINIO_ROOT_PASSWORD: ${fn.uuid}
+  APP__ADMIN__TOKEN: ${fn.uuid}
+  
 nodes:
-  - nodeType: dockerengine
+  - image: opencti/platform:6.3.6
+    displayName: OpenCTI-Platform
+    cloudlets: 16
     nodeGroup: cp
-    cloudlets: 64
-    extip: false
-    displayName: OpenCTI
     env:
       JELASTIC_EXPOSE: 8080
       JELASTIC_PORTS: 8080
-      
-    volumes:
-      - /var/lib/docker/volumes
-    volumeMounts: 
-      /var/lib/docker/volumes:
-        sourceNodeGroup: storage
-        sourcePath: /data
-      
-
-  - nodeType: storage
-    cloudlets: 64
-    nodeGroup: storage    
-    cluster: true
-
-onInstall:
-  - setup
-
-actions:     
-  setup:      
-    - cmd[cp]: |-
-        
-        echo '/root' >> /etc/jelastic/redeploy.conf
-        sysctl -w vm.max_map_count=1048575
-        git clone https://github.com/OpenCTI-Platform/docker.git
-        cd docker
-
-        (cat << EOF
-        OPENCTI_ADMIN_EMAIL=${globals.user}
-        OPENCTI_ADMIN_PASSWORD=${globals.password}
-        OPENCTI_ADMIN_TOKEN=$(cat /proc/sys/kernel/random/uuid)
-        OPENCTI_BASE_URL=http://localhost:8080
-        MINIO_ROOT_USER=$(cat /proc/sys/kernel/random/uuid)
-        MINIO_ROOT_PASSWORD=$(cat /proc/sys/kernel/random/uuid)
-        RABBITMQ_DEFAULT_USER=guest
-        RABBITMQ_DEFAULT_PASS=guest
-        ELASTIC_MEMORY_SIZE=4G
-        CONNECTOR_HISTORY_ID=$(cat /proc/sys/kernel/random/uuid)
-        CONNECTOR_EXPORT_FILE_STIX_ID=$(cat /proc/sys/kernel/random/uuid)
-        CONNECTOR_EXPORT_FILE_CSV_ID=$(cat /proc/sys/kernel/random/uuid)
-        CONNECTOR_IMPORT_FILE_STIX_ID=$(cat /proc/sys/kernel/random/uuid)
-        CONNECTOR_EXPORT_FILE_TXT_ID=$(cat /proc/sys/kernel/random/uuid)
-        CONNECTOR_IMPORT_DOCUMENT_ID=$(cat /proc/sys/kernel/random/uuid)
-        SMTP_HOSTNAME=localhost
-        EOF
-        ) > .env
-
-        docker-compose -f docker-compose.yml up -d 
-
-        #Checking of container is up and running 
-        until [ "`/usr/bin/docker inspect -f {{.State.Running}} docker-opencti-1`"=="true" ]; do
-          sleep 1
-          echo '.'
-        done;
-                
-        echo OK
-        #TEMP as JELASTIC_EXPOSE has problem
-        iptables -A PREROUTING -t nat -p tcp --dport 80 -j REDIRECT --to-port 8080
-
-      
-    
-success: | 
-  **OpenCTI Server**: [https://${env.domain}/](https://${env.domain}/)  
-  **User**: ${globals.user}  
-  **Password**: ${globals.password}    
-
+      MINIO__ENDPOINT: myminio
+      MINIO__ACCESS_KEY: ${globals.MINIO_ROOT_USER} 
+      MINIO__SECRET_KEY: ${globals.MINIO_ROOT_PASSWORD}
+      RABBITMQ__HOSTNAME: rabbitmq
+      RABBITMQ__MANAGEMENT_SSL: false
+      RABBITMQ__USERNAME: ${globals.RABBITMQ__USERNAME}
+      RABBITMQ__PASSWORD: ${globals.RABBITMQ__PASSWORD}
+      REDIS__HOSTNAME: redis
+      APP__PORT: 8080
+      APP__BASE_URL: ${OPENCTI_BASE_URL}
+      APP__ADMIN__EMAIL: ${globals.user}  
+      APP__ADMIN__PASSWORD: ${globals.password}
+Cancel
+Import
+ 
