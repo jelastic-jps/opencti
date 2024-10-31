@@ -23,15 +23,27 @@ globals:
   password: ${fn.password}
 
 nodes:
-  nodeType: dockerengine
-  nodeGroup: cp
-  cloudlets: 64
-  extip: false
-  displayName: OpenCTI
-  env:
-    JELASTIC_EXPOSE: 8080
-    JELASTIC_PORTS: 8080
+  - nodeType: dockerengine
+    nodeGroup: cp
+    cloudlets: 64
+    extip: false
+    displayName: OpenCTI
+    env:
+      JELASTIC_EXPOSE: 8080
+      JELASTIC_PORTS: 8080
+      
+    volumes:
+      - /var/lib/docker/volumes
+    volumeMounts: 
+      /var/lib/docker/volumes:
+        sourceNodeGroup: storage
+        sourcePath: /data
+      
 
+  - nodeType: storage
+    cloudlets: 64
+    nodeGroup: storage    
+    cluster: true
 
 onInstall:
   - setup
@@ -41,7 +53,7 @@ actions:
     - cmd[cp]: |-
         
         echo '/root' >> /etc/jelastic/redeploy.conf
-		sysctl -w vm.max_map_count=1048575
+        sysctl -w vm.max_map_count=1048575
         git clone https://github.com/OpenCTI-Platform/docker.git
         cd docker
 
